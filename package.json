@@ -15,8 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "request": "~2.12.0",
-    "elementtree": "~0.1.5",
-    "tap": "~0.3.3"
+    "elementtree": "~0.1.5"
   },
   "readmeFilename": "README.md",
   "directories": {
