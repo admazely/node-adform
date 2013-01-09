@@ -1,6 +1,6 @@
 {
   "name": "adform",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A node-module to integrate with the adform api (http://api.adform.com/Services/Documentation/Index.htm)",
   "main": "adform.js",
   "repository": {
