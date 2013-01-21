@@ -62,6 +62,31 @@ adform.getCampaigns = function(ticket, advertiser, callback) {
     });
 }
 
+adform.getAdStats = function(ticket, campaign, callback) {
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/CampaignStatsService.svc',
+        action: 'http://www.adform.com/api/CampaignStatsService/2010/09/ICampaignStatsService/GetAdStats',
+        data: {
+            'ns1:GetAdStatsData': {
+                'ns1:StartDate': '2012-01-20T00:00:00',
+                'ns1:EndDate': '2012-01-21T00:00:00',
+                'ns1:IdFilter': {
+                    'ns1:CampaignId': campaign.id
+                }
+            },
+        },
+        namespaces: [{
+            name: 'ns1', src: 'http://www.adform.com/api/CampaignStatsService/2010/09'
+        }]
+
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+    });
+}
+
 adform.login = function(username, password, callback) {
     var body = {
         "UserName": username,
@@ -80,3 +105,28 @@ adform.login = function(username, password, callback) {
         }
     );
 }
+
+var findAdvertiser = function(ticket, shopId, callback) {
+    adform.getAdvertisers(ticket, function(err, advertisers) {
+        if (err) return callback(err);
+
+        for(var i = 0; i < advertisers.length; ++i) {
+            var adv = advertisers[i];
+            if (adv.name.indexOf(shopId) !== -1) return callback(null, adv);
+        }
+        callback(null, null);
+    });
+}
+
+var username = '';
+var password = '';
+adform.login(username, password, function(err, ticket) {
+    findAdvertiser(ticket, 'oneplay.com', function(err, advertiser) {
+        adform.getCampaigns(ticket, advertiser, function(err, campaigns) {
+            var campaign = campaigns[0];
+            adform.getAdStats(ticket, campaign, function(err, stats) {
+                console.log('stats', stats);
+            });
+        });
+    });
+});
