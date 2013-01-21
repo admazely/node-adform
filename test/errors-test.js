@@ -14,6 +14,16 @@ test('ValidationError', function(t) {
 	t.end();
 });
 
+test('SerializationError', function(t) {
+	var body = '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><s:Fault><faultcode>s:SerializationError</faultcode><faultstring xml:lang="en-US">Request serialization error occurred. Please check if your request is valid and data types are correct.</faultstring><detail><FaultDetails xmlns="http://www.adform.com/api/2010/06" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"><Errors><Error><Message>Request serialization error occurred. Please check if your request is valid and data types are correct.</Message><FieldPath i:nil="true"/></Error></Errors><RefNo i:nil="true"/></FaultDetails></detail></s:Fault></s:Body></s:Envelope>';
+
+	var err = errors.wrap(body);
+	t.type(err, errors.SerializationError);
+	t.equal(err.message, 'Request serialization error occurred. Please check if your request is valid and data types are correct.');
+	t.equal(err.body, body);
+	t.end();
+});
+
 test('UnknownError', function(t) {
 	var input = '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><s:Fault><faultcode>s:SomeUnknownError</faultcode><faultstring xml:lang="en-US">SomeUnknownError</faultstring><detail><FaultDetails xmlns="http://www.adform.com/api/2010/06" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"><Errors><Error><Message>Ad name is not unique.</Message><FieldPath>Ad.Name</FieldPath></Error></Errors><RefNo i:nil="true"/></FaultDetails></detail></s:Fault></s:Body></s:Envelope>';
 
