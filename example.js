@@ -1,18 +1,12 @@
-var userName =;
-var password =;
+var userName = 'pvts-admzdk';
+var password = 'Pvts.987';
 var adform = require('./adform');
 
 // ticket is a security token you get when logged in used to do further
 // actions with the api
-adform.login(userName, password, function(err, ticket) {
-    if (err) return console.error(err);
-    adform.getAdvertisers(ticket, function(err, advertisers) {
-        if (err) return console.error(err);
-        // advertisers is a list of advertisers (clients) associated with
-        // the logged in user
-        console.log('Advertisers:');
-        advertisers.forEach(function(advertiser) {
-            console.log('name: %s id: %s', advertiser.name, advertiser.id);
-        });
+var client = adform(userName, password);
+client.getAdvertisers(function(err, advertisers) {
+    advertisers.forEach(function(advertiser) {
+        console.log('name: %s\tid: %s', advertiser.name, advertiser.id);
     });
 });
