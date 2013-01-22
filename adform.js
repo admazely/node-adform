@@ -62,6 +62,58 @@ adform.getCampaigns = function(ticket, advertiser, callback) {
     });
 }
 
+adform.getAdStats = function(ticket, campaign, startDate, endDate, callback) {
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/CampaignStatsService.svc',
+        action: 'http://www.adform.com/api/CampaignStatsService/2010/09/ICampaignStatsService/GetAdStats',
+        data: {
+            'ns1:GetAdStatsData': {
+                'ns1:IdFilter': {
+                    'ns:CampaignId': {
+                        '_attr': {
+                            'xmlns:ns': 'http://www.adform.com/api/CampaignStatsService/2010/09'
+                        },
+                        '_text': campaign.id
+                    },
+                    '_attr': {
+                        'i:type': 'ns1:CampaignIdFilter',
+                        'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
+                    }
+                },
+                'ns1:StartDate': startDate.toJSON().slice(0, 10),
+                'ns1:EndDate': endDate.toJSON().slice(0, 10)
+            },
+        },
+        namespaces: [{
+            name: 'ns1', src: 'http://www.adform.com/api/CampaignStatsService/2010/09'
+        }]
+
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        var ads = etree.findall('./s:Body/Campaign/Ads/Ad').map(function(ad) {
+            return {
+                id: Number(ad.findtext('Id')),
+                days: ad.findall('./Days/Day').map(function(day) {
+                    var stats = day.find('Stats');
+                    return {
+                        date: new Date(day.findtext('Date')),
+                        stats: {
+                            impressions: Number(stats.findtext('Impressions')),
+                            clicks: Number(stats.findtext('Clicks')),
+                            leads: Number(stats.findtext('Leads')),
+                            sales: Number(stats.findtext('Sales'))
+                        }
+                    }                    
+                })
+            }
+        });
+        callback(null, ads);
+    });
+}
+
 adform.login = function(username, password, callback) {
     var body = {
         "UserName": username,
