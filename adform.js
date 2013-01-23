@@ -111,6 +111,7 @@ adform.getAdStats = function(ticket, campaign, startDate, endDate, callback) {
                         'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
                     }
                 },
+                // transform startDate and endDate to 'yyyy-mm-dd' format
                 'ns1:StartDate': startDate.toJSON().slice(0, 10),
                 'ns1:EndDate': endDate.toJSON().slice(0, 10)
             }
