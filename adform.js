@@ -44,11 +44,6 @@ adform.createAd = function(ticket, campaign, name, data, callback) {
 };
 
 adform.getCampaigns = function(ticket, advertiser, callback) {
-    function formatCampaigns(rawCampaigns) {
-        return rawCampaigns.map(function(campaign) {
-
-        });
-    }
     makeRequest(ticket, {
         uri: 'https://api.adform.com/Services/CampaignService.svc',
         action:
