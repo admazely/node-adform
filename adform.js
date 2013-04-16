@@ -131,6 +131,39 @@ adform.getAdStats = function(ticket, campaign, startDate, endDate, callback) {
     });
 };
 
+adform.getTemplates = function(ticket, advertiser, callback) {
+    var ns = 'http://www.adform.com/api/ProductService/2010/09';
+
+    function formatTemplate(template) {
+        return {
+            id: Number(template.findtext('Id')),
+            title: template.findtext('Title')
+        };
+    }
+
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/ProductService.svc',
+        action: 'http://www.adform.com/api/ProductService/2010/09/' +
+            'IProductService/GetTemplates',
+        data: {
+            'ns1:GetTemplatesData': {
+                'ns1:AdvertiserName': advertiser.name
+            }
+        },
+        namespaces: [{
+            name: 'ns1',
+            src: ns
+        }]
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        var templates = etree.findall('./s:Body/Templates/Template').map(formatTemplate);
+        callback(null, templates);
+    });
+}
+
 adform.login = function(username, password, callback) {
     var body = {
         'UserName': username,
