@@ -164,6 +164,70 @@ adform.getTemplates = function(ticket, advertiser, callback) {
     });
 }
 
+
+adform.saveProductFeed = function(ticket, feedName, templateId, sourceUrl, 
+        filePath, schedule, endDate, notificationEmail, transformationName, 
+        xslt, callback) {
+    var ns = 'http://www.adform.com/api/ProductService/2010/09';
+    xslt = '<![CDATA[' + xslt + ']]>';
+
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/ProductService.svc',
+        action: 'http://www.adform.com/api/ProductService/2010/09/' +
+            'IProductService/SaveProductFeed',
+        data : {
+            'ns1:SaveProductFeedData': { 
+                    'ns1:Feed': {
+                        'ns1:Name': feedName,
+                        'ns1:TemplateId': templateId,
+                        'ns1:Source': {
+                            'ns1:Url': sourceUrl,
+                            '_attr': {
+                                'i:type': 'ns1:HttpSource',
+                                'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
+                            }
+                        },
+                        'ns1:FilePath': filePath,
+                        'ns1:Schedule': {
+                            'ns1:Interval': schedule.interval,
+                            'ns1:StartHour': schedule.startHour
+                        },
+                        'ns1:EndDate': endDate,
+                        'ns1:NotificationEmail': notificationEmail,
+                        'ns1:LastRunTime': {
+                            '_attr': {
+                                'i:nil': true,
+                                'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
+                            }
+                        },
+                        'ns1:LastRunStatus': {
+                            '_attr': {
+                                'i:nil': true,
+                                'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
+                            }
+                        },
+                        'ns1:Transformation': {
+                            'ns1:Name': transformationName,
+                            'ns1:DefaultProductName': 'Cheapest',
+                            'ns1:Xslt': xslt
+                        }
+                    }
+                }
+            },
+            namespaces: [{
+                name: 'ns1',
+                src: ns
+            }]
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        var feedCode = etree.findtext('./s:Body/FeedCode');
+        callback(null, feedCode);
+    });
+}
+
 adform.login = function(username, password, callback) {
     var body = {
         'UserName': username,
