@@ -194,7 +194,28 @@ adform.getFeeds = function(ticket, advertiser, callback) {
 }
 
 adform.deleteFeed = function(ticket, feed, callback) {
+    var ns = 'http://www.adform.com/api/ProductService/2010/09';
 
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/ProductService.svc',
+        action: 'http://www.adform.com/api/ProductService/2010/09/' +
+            'IProductService/DeleteFeed',
+        data: {
+            'ns1:DeleteFeedData': {
+                'ns1:FeedCode': feed.code
+            }
+        },
+        namespaces: [{
+            name: 'ns1',
+            src: ns
+        }]
+    }, function(err) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        callback(null);
+    })
 }
 
 adform.getTemplates = function(ticket, advertiser, callback) {
@@ -239,7 +260,6 @@ adform.saveProductFeed = function(ticket, opts, callback) {
     }
 
     var tmp = url.parse(opts.source);
-    console.log(tmp);
     var sourceUrl = 'http://' + tmp.host;
     var filePath = tmp.path.slice(1);
 
