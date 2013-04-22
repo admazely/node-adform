@@ -1,3 +1,5 @@
+var url = require('url');
+
 var request = require('request').defaults({ jar: false });
 
 var makeRequest = require('./lib/request.js');
@@ -130,6 +132,107 @@ adform.getAdStats = function(ticket, campaign, startDate, endDate, callback) {
         callback(null, ads);
     });
 };
+
+adform.getTemplates = function(ticket, advertiser, callback) {
+    var ns = 'http://www.adform.com/api/ProductService/2010/09';
+
+    function formatTemplate(template) {
+        return {
+            id: Number(template.findtext('Id')),
+            title: template.findtext('Title')
+        };
+    }
+
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/ProductService.svc',
+        action: 'http://www.adform.com/api/ProductService/2010/09/' +
+            'IProductService/GetTemplates',
+        data: {
+            'ns1:GetTemplatesData': {
+                'ns1:AdvertiserName': advertiser.name
+            }
+        },
+        namespaces: [{
+            name: 'ns1',
+            src: ns
+        }]
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        var templates = etree.findall('./s:Body/Templates/Template').map(formatTemplate);
+        callback(null, templates);
+    });
+}
+
+
+adform.saveProductFeed = function(ticket, opts, callback) {
+    var ns = 'http://www.adform.com/api/ProductService/2010/09';
+
+    if (!opts.source) {
+        return callback(new TypeError('opts.souce can not be undefined'))
+    }
+
+    var tmp = url.parse(opts.source);
+    console.log(tmp);
+    var sourceUrl = 'http://' + tmp.host;
+    var filePath = tmp.path.slice(1);
+
+    var xslt = '<![CDATA[' + opts.xslt + ']]>';
+    var schedule = {
+        'ns1:Interval': opts.schedule.interval
+    }
+    if (opts.schedule.startHour) {
+        schedule['ns1:StartHour'] = opts.schedule.startHour;
+    }
+
+    makeRequest(ticket,
+        {
+            uri: 'https://api.adform.com/Services/ProductService.svc',
+            action: 'http://www.adform.com/api/ProductService/2010/09/' +
+                'IProductService/SaveProductFeed',
+            data : {
+                'ns1:SaveProductFeedData': {
+                    _attr: {
+                        'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance',
+                        'xmlns': 'http://www.adform.com/api/ProductService/2010/09'
+                    },
+                    'Feed': {
+                        'ns1:Name': opts.feedName,
+                        'ns1:Source': {
+                            'ns1:Url': sourceUrl,
+                            '_attr': {
+                                'i:type': 'ns1:HttpSource',
+                                'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
+                            }
+                        },
+                        'ns1:Schedule': schedule,
+                        'ns1:EndDate': opts.endDate,
+                        'ns1:FilePath': filePath,
+                        'ns1:NotificationEmail': opts.notificationEmail,
+                        'ns1:TemplateId': opts.templateId,
+                        'ns1:Transformation': {
+                            'ns1:Name': opts.transformationName,
+                            'ns1:DefaultProductName': 'Cheapest',
+                            'ns1:Xslt': xslt
+                        }
+                    }
+                }
+            },
+            namespaces: [{
+                name: 'ns1',
+                src: ns
+            }]
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        var feedCode = etree.findtext('./s:Body/FeedCode');
+        callback(null, feedCode);
+    });
+}
 
 adform.login = function(username, password, callback) {
     var body = {
