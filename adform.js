@@ -133,6 +133,68 @@ adform.getAdStats = function(ticket, campaign, startDate, endDate, callback) {
     });
 };
 
+adform.getFeeds = function(ticket, advertiser, callback) {
+    function strOrNull(str) {
+        return str.length === 0 ? null : str;
+    }
+
+    function formatFeed(feed) {
+        console.log(feed.find('Transformation'))
+        var lastRunTime = feed.findtext('LastRunTime');
+        if (lastRunTime)
+            lastRunTime = new Date(lastRunTime)
+
+        return {
+            type: feed.get('i:type'),
+            code: feed.findtext('Code'),
+            name: feed.findtext('Name'),
+            source: feed.findtext('Source/Url') + feed.findtext('FilePath'),
+            schedule: {
+                interval: feed.findtext('Schedule/Interval'),
+                startHour: feed.findtext('Schedule/StartHour')
+            },
+            endDate: new Date(feed.findtext('EndDate')),
+            lastRunTime: lastRunTime,
+            lastRunStatus: feed.findtext('LastRunStatus'),
+            notificationEmail: feed.findtext('NotificationEmail'),
+            templateId: Number(feed.findtext('TemplateId')),
+            transformation: {
+                name: feed.findtext('Transformation/Name'),
+                defaultProductName: feed.findtext('Transformation/DefaultProductName'),
+                description: feed.findtext('Transformation/Description'),
+                xslt: feed.findtext('Transformation/Xslt')
+            }
+        }
+    }
+
+    var ns = 'http://www.adform.com/api/ProductService/2010/09';
+
+    makeRequest(ticket, {
+        uri: 'https://api.adform.com/Services/ProductService.svc',
+        action: 'http://www.adform.com/api/ProductService/2010/09/' +
+            'IProductService/GetFeeds',
+        data: {
+            'ns1:GetFeedsData': {
+                'ns1:AdvertiserName': advertiser.name
+            }
+        },
+        namespaces: [{
+            name: 'ns1',
+            src: ns
+        }]
+    }, function(err, etree) {
+        if (err) {
+            console.log(err.body);
+            throw err;
+        }
+        console.log(etree)
+        callback(
+            null,
+            etree.findall('./s:Body/Feeds/Feed').map(formatFeed)
+        )
+    })
+}
+
 adform.getTemplates = function(ticket, advertiser, callback) {
     var ns = 'http://www.adform.com/api/ProductService/2010/09';
 
