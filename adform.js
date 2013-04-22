@@ -134,10 +134,6 @@ adform.getAdStats = function(ticket, campaign, startDate, endDate, callback) {
 };
 
 adform.getFeeds = function(ticket, advertiser, callback) {
-    function strOrNull(str) {
-        return str.length === 0 ? null : str;
-    }
-
     function formatFeed(feed) {
         console.log(feed.find('Transformation'))
         var lastRunTime = feed.findtext('LastRunTime');
@@ -193,6 +189,10 @@ adform.getFeeds = function(ticket, advertiser, callback) {
             etree.findall('./s:Body/Feeds/Feed').map(formatFeed)
         )
     })
+}
+
+adform.deleteFeed = function(ticket, feed, callback) {
+
 }
 
 adform.getTemplates = function(ticket, advertiser, callback) {
