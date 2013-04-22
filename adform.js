@@ -158,7 +158,9 @@ adform.getFeeds = function(ticket, advertiser, callback) {
                 name: feed.findtext('Transformation/Name'),
                 defaultProductName: feed.findtext('Transformation/DefaultProductName'),
                 description: feed.findtext('Transformation/Description'),
-                xslt: feed.findtext('Transformation/Xslt')
+                xslt: feed.findtext('Transformation/Xslt'),
+                defaultRedirectUrl: feed.findtext('Transformation/DefaultRedirctUrl'),
+                templateLandingPage: feed.findtext('Transformation/TemplateLandingPage')
             }
         }
     }
